@@ -1,60 +1,68 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Check root
 if [[ "$EUID" -eq 0 ]]; then
-  echo "💀 Stop running as root, you stupid."
+  echo "💀 Don't run as root, dumbass."
   exit 1
 fi
 
 echo "=== AMD GAMING SETUP FOR ARCH ==="
 
-# 1️⃣ Update pacman and keyring
-echo "[1/8] Updating system..."
+echo "[1/9] Enabling multilib..."
+if ! grep -q '^\[multilib\]' /etc/pacman.conf; then
+  sudo sed -i '/\[multilib\]/,/Include/s/^#//' /etc/pacman.conf
+  sudo pacman -Sy --noconfirm
+fi
+
+echo "[2/9] Updating system..."
 sudo pacman-key --init
 sudo pacman-key --populate archlinux
 sudo pacman -Syu --noconfirm
 
-# 2️⃣ Install base tools
-echo "[2/8] Installing base tools..."
-sudo pacman -S --needed git curl wget unzip zip nano vim base-devel \
+echo "[3/9] Installing base tools..."
+sudo pacman -S --needed --noconfirm git curl wget unzip zip nano vim base-devel \
   htop btop fastfetch neofetch python python-pip ntfs-3g
 
-# 3️⃣ Audio
-echo "[3/8] Installing audio tools..."
-sudo pacman -S --needed pipewire pipewire-alsa pipewire-pulse wireplumber \
-  alsa-utils pavucontrol
+echo "[4/9] Installing audio..."
+sudo pacman -S --needed --noconfirm pipewire pipewire-alsa pipewire-pulse \
+  wireplumber alsa-utils pavucontrol
 
-# 4️⃣ Gaming core (Steam, Wine, Lutris, AMD Vulkan)
-echo "[4/8] Installing gaming core..."
-sudo pacman -S --needed steam wine winetricks lutris gamemode mangohud lib32-mangohud \
-  vulkan-tools mesa lib32-mesa vulkan-radeon lib32-vulkan-radeon
+echo "[5/9] Installing gaming shit..."
+sudo pacman -S --needed --noconfirm steam wine winetricks lutris gamemode \
+  mangohud lib32-mangohud vulkan-tools mesa lib32-mesa vulkan-radeon \
+  lib32-vulkan-radeon
 
-# 5️⃣ Fonts
-echo "[5/8] Installing fonts..."
-sudo pacman -S --needed ttf-liberation ttf-dejavu noto-fonts noto-fonts-emoji
+echo "[6/9] Installing fonts..."
+sudo pacman -S --needed --noconfirm ttf-liberation ttf-dejavu noto-fonts \
+  noto-fonts-emoji
 
-# 6️⃣ AUR helper yay
-echo "[6/8] Installing yay (AUR helper)..."
+echo "[7/9] Installing yay..."
 if ! command -v yay &>/dev/null; then
-  cd /tmp
-  rm -rf yay
+  pushd "$(mktemp -d)" > /dev/null
   git clone https://aur.archlinux.org/yay.git
   cd yay
-  makepkg -si
+  echo "⚠️  If this stops, type 'y' to confirm dependencies"
+  makepkg -si --noconfirm || true
+  popd > /dev/null
 fi
 
-# 7️⃣ Install AUR packages (Brave, Heroic, ProtonUp-Qt)
-echo "[7/8] Installing Brave, Heroic, ProtonUp-Qt..."
-yay -S brave-bin heroic-games-launcher protonup-qt --noconfirm
+echo "[8/9] Installing AUR shit..."
+yay -S brave-bin heroic-games-launcher protonup-qt
 
-# 8️⃣ Enable GameMode
-echo "[8/8] Enabling GameMode..."
-sudo systemctl enable --now gamemoded.service || true
+echo "[9/9] Setting up gamemode..."
+sudo systemctl enable --now gamemoded.service 2>/dev/null || true
+if ! groups "$USER" | grep -q gamemode; then
+  sudo usermod -aG gamemode "$USER"
+  echo "⚠️  Logout and login again for gamemode to work."
+fi
 
 echo ""
-echo "✅ AMD Gaming Setup done!"
-echo "Next steps:"
-echo "1) Steam → Settings → Compatibility → Enable Steam Play"
-echo "2) Run ProtonUp-Qt → Install Proton-GE"
-echo "3) Go play some games! 💪"
+echo "✅ Done, you're ready to waste time."
+echo ""
+echo "Next:"
+echo "1) Steam -> Settings -> Compatibility -> Enable Steam Play"
+echo "2) Open ProtonUp-Qt -> Install Proton-GE"
+echo "3) Logout and login again"
+echo "4) GameMode? Use 'gamemoderun %command%' in Steam launch options"
+echo ""
+echo "Now go touch grass or whatever. 🎮"
