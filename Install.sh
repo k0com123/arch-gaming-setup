@@ -159,9 +159,12 @@ sudo pacman-key --init
 sudo pacman-key --populate archlinux
 sudo pacman -Syu --noconfirm
 
-echo "[3/9] Installing base tools..."
-sudo pacman -S --needed --noconfirm git curl wget unzip zip nano vim base-devel \
-  htop btop fastfetch neofetch python python-pip ntfs-3g lshw pciutils
+echo "[3/9] Installing base shit..."
+for pkg in git curl wget unzip zip nano vim base-devel htop btop fastfetch python python-pip ntfs-3g lshw pciutils; do
+echo "Instaling Shit: $pkg"
+sudo pacman -S --needed --noconfirm
+"$pkg" || echo "shit failed: $pkg"
+done
 
 echo "[4/9] Installing audio..."
 sudo pacman -S --needed --noconfirm pipewire pipewire-alsa pipewire-pulse \
