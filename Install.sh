@@ -293,7 +293,7 @@ else
     echo "  - Game won't start? Check ProtonDB"
     echo "  - Low FPS? Disable compositor, check mangohud"
     echo "  - Still broken? Cry and dual-boot Windows"
-    echo "  - At this point contact me throug github
+    echo "  - At this point contact me throug github"
 fi
 
 echo ""
